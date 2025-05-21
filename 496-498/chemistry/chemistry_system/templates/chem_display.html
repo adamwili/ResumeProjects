@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}
+    All Chemicals
+{% endblock %}
+
+{% block content %}
+
+<div class="sm:px-1 px-[1vw]">
+    <button class="btn lg:hidden mb-2" id="show-filter-btn">Show filters</button>
+
+    <section class="grid">
+        <c-utilities />
+    </section>
+
+    <div class="grid sm:grid-cols-1 md:grid-cols-10 gap-x-4">
+        <!-- Filters Section -->
+        <section class="grid sm:grid-cols-1 md:col-span-2 w-auto" id="filters">
+            <c-filters />
+        </section>
+
+        <!-- Chemicals List Section -->
+        <section class="grid sm:grid-cols-1 md:col-span-8">
+            {% if table_name == "individualChemicals" %}
+                <c-chem-list-indiv />
+            {% elif table_name == "allChemicals" %}
+                <c-chem-list />
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+    let btn = document.getElementById('show-filter-btn');
+    btn.addEventListener('click', (e) => {
+        let filterSection = document.getElementById('filters');
+        if (filterSection.classList.contains('hidden')) {
+            filterSection.classList.remove('hidden');
+            filterSection.classList.add('grid');
+            filterSection.classList.add('col-span-1');
+            filterSection.classList.add('mb-4');
+            e.target.textContent = 'Hide filters';
+        } else {
+            filterSection.classList.add('hidden');
+            filterSection.classList.remove('grid');
+            filterSection.classList.remove('col-span-1');
+            filterSection.classList.remove('mb-4');
+            e.target.textContent = 'Show filters';
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add New Chemical
+{% endblock %}
+
+{% block content %}
+    <h2>Add a New Chemical</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="referrer" value="{{ referrer }}">
+        <button type="submit" class="button-style">Add Chemical</button>
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('chem_id')) {
+                const chemId = urlParams.get('chem_id');
+                const inputs = document.querySelectorAll('input');
+                for (let input of inputs) {
+                    if (!input.value) { 
+                        input.value = chemId;
+                        break;
+                    }
+                }
+            }
+        });
+        $(document).on('select2:open', () => {
+            document.querySelector('.select2-search__field').focus();
+        });
+    </script>
+      
+    
+    
+{% endblock %}

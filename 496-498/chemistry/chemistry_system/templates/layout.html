@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <!-- For mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{% endblock %}</title>
+
+  {% load static %}
+  {% load custom_tags %}
+  <!-- jQuery (if needed) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Optional Autocomplete / Select2 -->
+  <script src="{% static 'autocomplete_light/autocomplete_light.js' %}"></script>
+  <script src="{% static 'autocomplete_light/select2.js' %}"></script>
+  
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{% static 'css/site.css' %}" />
+  <!-- Tailwind + DaisyUI -->
+  <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet"> 
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  
+  <link rel="stylesheet" href="{% static 'autocomplete_light/select2.css' %}">
+
+  <!-- site.js incudes htmx -->
+  <script src="{% static 'js/site.js' %}"></script>
+  <script src="{% static 'js/htmx.min.js' %}"></script>
+
+
+
+
+  {{ form.media }}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+  <!-- Desktop Nav (≥768px) -->
+  <div class="navbar desktop-nav">
+    <a href="{% url 'home' %}" class="navbar-brand">Home</a>
+    <a href="{% url 'chem_display' 'allChemicals' %}">All Chemicals</a>
+    <a href="{% url 'chem_display' 'individualChemicals' %}">Individual Chemcials</a>
+
+    <a href="{% url 'search' %}">Search</a>
+    <a href="{% url 'scan' %}">Scanner</a>
+    <a href="{% url 'checkinandout' %}">Check In/Out</a>
+    <a href="{% url 'print_page' %}">Print</a>
+    <a href="{% url 'log' %}">Log</a>
+
+    {% if user|has_group:"Admin" %}
+    <a href="{% url 'admin:index' %}">Admin</a>
+    {% endif %}
+    <div class="profile-text">
+      <strong>{{ user.username }}</strong>
+    </div>
+
+    <div class="logout-container">
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mobile Top Bar (<768px) -->
+  <div class="mobile-top-bar">
+    <div id="hamburgerBtn" class="mobile-hamburger">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+    <div class="uindy-logo">
+      <img src="{% static 'images/U-Of-I-Logo.png' %}" alt="Logo">
+    </div>
+  </div>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-nav-links" id="mobileNav">
+    <div class="drawer-profile">
+      <div class="profile-text">
+        <strong>{{ user.username }}</strong>
+        <span class="profile-email">{{ user.email|default_if_none:"[No email]" }}</span>
+      </div>
+    </div>
+    <h3 style="color: #fff; margin: 0 0 8px;">Chemistry Inventory</h3>
+    <hr style="border-color: rgba(255,255,255,0.3); margin: 10px 0;" />
+
+    <div class="collapsible-section">
+      <div class="collapsible-header">
+        <span>Data</span>
+        <button class="toggle-arrow"><i class="fa fa-chevron-down"></i></button>
+      </div>
+      <div class="collapsible-content">
+        <a href="{% url 'chem_display' 'allChemicals' %}"><i class="fa fa-flask"></i> All Chemicals</a>
+        <a href="{% url 'chem_display' 'individualChemicals' %}"><i class="fa fa-vial"></i> Individual Chemicals</a>
+        <a href="{% url 'search' %}"><i class="fa fa-search"></i> Search</a>
+      </div>
+    </div>
+
+    <a href="{% url 'scan' %}"><i class="fa fa-qrcode"></i> Scanner</a>
+    <a href="{% url 'checkinandout' %}"><i class="fa fa-exchange-alt"></i> Check In/Out</a>
+    <a href="{% url 'print_page' %}"><i class="fa fa-print"></i> Print</a>
+    <a href="{% url 'log' %}"><i class="fa fa-history"></i> Log</a>
+    <a href="{% url 'admin:index' %}"><i class="fa fa-history"></i> Admin</a>
+
+
+    <!-- Logout in middle -->
+    <form method="post" action="{% url 'logout' %}" class="logout-form">
+      {% csrf_token %}
+      <button type="submit" class="logout-button">
+        <i class="fa fa-sign-out-alt"></i> Logout
+      </button>
+    </form>
+  </div>
+  <div class="mobile-overlay" id="overlay"></div>
+{% endif %}
+
+<div class="body-content">
+  {% block content %}{% endblock %}
+</div>
+
+<footer>
+  <p>&copy; 2025</p>
+</footer>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const menuBtn = document.getElementById("hamburgerBtn");
+    const mobileNav = document.getElementById("mobileNav");
+    const overlay = document.getElementById("overlay");
+
+    menuBtn.addEventListener("click", () => {
+      mobileNav.classList.toggle("active-drawer");
+      overlay.classList.toggle("show-overlay");
+    });
+    overlay.addEventListener("click", () => {
+      mobileNav.classList.remove("active-drawer");
+      overlay.classList.remove("show-overlay");
+    });
+
+    document.querySelectorAll('.collapsible-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.parentElement;
+        section.classList.toggle('open'); // Toggle the "open" class
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

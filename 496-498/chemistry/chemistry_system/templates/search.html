@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}
+    Search Inventory
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <!-- Search Form -->
+    <form action="{% url 'search' %}" method="get" class="search-form">
+        <div class="search-box-container">
+            <!-- Dropdown to select model -->
+            <select name="model" id="model-select" class="model-select">
+                <option value="individualChemicals" {% if model == "individualChemicals" %}selected{% endif %}>
+                    Individual Chemicals
+                </option>
+                <option value="allChemicals" {% if model == "allChemicals" %}selected{% endif %}>
+                    All Chemicals
+                </option>
+            </select>
+
+            <!-- Search input -->
+            <input
+                type="text"
+                name="query"
+                id="search-input"
+                placeholder="Enter chemical name or ID..."
+                class="search-input"
+                value="{{ query|default_if_none:'' }}"
+                autocomplete="off"
+            >
+            <!-- Live search results container -->
+            <div id="live-results" class="dropdown-menu"></div>
+
+            <button type="submit" class="search-button">Search</button>
+        </div>
+    </form>
+</div>
+
+<div class="results-container">
+    <!-- Conditionally show headings based on query/results -->
+    {% if query and not results %}
+        <h2 class="results-title">No Results Found</h2>
+        <p class="no-results-msg">No results found for '{{ query }}'.</p>
+    {% elif query %}
+        <h2 class="results-title">Chemical Search Results</h2>
+    {% else %}
+        <h2 class="results-title">Search Chemical</h2>
+        <p class="no-results-msg">Enter a search query to find chemicals.</p>
+    {% endif %}
+
+    <!-- If there are results, show the model -->
+    {% if results and results|length > 0 %}
+        <p class="results-summary">
+            Found {{ results|length }} result{{ results|pluralize }} for ({{ query }})
+        </p>
+
+        <div class="table-responsive">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        {% if model == "individualChemicals" %}
+                            <th>Bottle ID</th>
+                            <th>Material</th>
+                            <th>Name</th>
+                            <th>Cabinet</th>
+                            <th>Shelf</th>
+                            <th>Amount</th>
+                            <th>Unit</th>
+                            <th>Concentration</th>
+                            <th>SDS</th>
+                            <th>Instrument</th>
+                        {% elif model == "allChemicals" %}
+                            <th>Chemical ID</th>
+                            <th>Material</th>
+                            <th>Name</th>
+                            <th>Room</th>
+                            <th>Cabinet</th>
+                            <th>Shelf</th>
+                            <th>Total Amount</th>
+                            <th>Expected Amount</th>
+                            <th>Percentage</th>
+                            <th>Notes</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in results %}
+                    <tr>
+                        {% if model == "individualChemicals" %}
+                            <td data-label="Bottle ID">{{ item.chemBottleIDNUM }}</td>
+                            <td data-label="Material">{{ item.chemAssociated.chemMaterial }}</td>
+                            <td data-label="Name">{{ item.chemAssociated.chemName }}</td>
+                            <td data-label="Cabinet">{{ item.chemLocationCabinet }}</td>
+                            <td data-label="Shelf">{{ item.chemLocationShelf }}</td>
+                            <td data-label="Amount">{{ item.chemAmountInBottle }}</td>
+                            <td data-label="Unit">{{ item.chemAssociated.chemAmountUnit }}</td>
+                            <td data-label="Concentration">{{ item.chemAssociated.chemConcentration }}</td>
+                            <td data-label="SDS">{{ item.chemAssociated.chemSDS }}</td>
+                            <td data-label="Instrument">{{ item.chemAssociated.chemInstrument }}</td>
+                        {% elif model == "allChemicals" %}
+                            <td data-label="Chemical ID">{{ item.chemID }}</td>
+                            <td data-label="Material">{{ item.chemMaterial }}</td>
+                            <td data-label="Name">{{ item.chemName }}</td>
+                            <td data-label="Room">{{ item.chemLocationRoom }}</td>
+                            <td data-label="Cabinet">{{ item.chemLocationCabinet }}</td>
+                            <td data-label="Shelf">{{ item.chemLocationShelf }}</td>
+                            <td data-label="Total Amount">{{ item.chemAmountTotal }}</td>
+                            <td data-label="Expected Amount">{{ item.chemAmountExpected }}</td>
+                            <td data-label="Percentage">{{ item.chemAmountPercentage }}</td>
+                            <td data-label="Notes">{{ item.chemNotes }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {% if results.has_previous %}
+                <a href="?query={{ query }}&model={{ model }}&page={{ results.previous_page_number }}" 
+                   class="pagination-link">Previous</a>
+            {% endif %}
+
+            {% with surrounding_links=5 %}
+                {% for page_num in results.paginator.page_range %}
+                    {% if page_num >= results.number|add:"-5" and page_num <= results.number|add:"5" %}
+                        {% if page_num == results.number %}
+                            <span class="pagination-link active">{{ page_num }}</span>
+                        {% else %}
+                            <a href="?query={{ query }}&model={{ model }}&page={{ page_num }}"
+                               class="pagination-link">{{ page_num }}</a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+
+            {% if results.has_next %}
+                <a href="?query={{ query }}&model={{ model }}&page={{ results.next_page_number }}" 
+                   class="pagination-link">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Link to your enhanced live-search script -->
+<script src="{% static 'js/live-search.js' %}"></script>
+{% endblock %}
+
+<footer class="site-footer">
+  <p>&copy; 2025 University of Indianapolis</p>
+</footer>
